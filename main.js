@@ -1,6 +1,6 @@
 /* Main game file: main.js */
 /* Game: [Your Game Name Here] */
-/* Authors: [Your Name(s) Here] */
+/* Authors: Robby and Jaydrien */
 /* Description: [Short description of your game here] */
 /* Citations: [List any resources, libraries, tutorials, etc you used here] */
 /* AI Use: describe what you asked, what it gave you, and what you changed. */
@@ -16,10 +16,47 @@ let gi = new GameInterface();
 let infectionRate = 0.5;
 let quarantineRate = 0.65;
 let quarantine = 0;
-
-// let population = [];
+let population = [];
 // let roundCount = 0;
 // let infectedPerRound = [1];
+
+/* --- SIMULATION LOGIC -------------------------------------------------
+ *
+ * Write functions to update your population each round.
+ * Your CREATE task function must have a parameter that affects
+ * its behavior, sequencing, selection (if/else), iteration (loop),
+ * and an explicit call with arguments somewhere in your code.
+ */
+//repeate untill higher then inital population
+function generatePopulation(size) {
+  // YOUR CODE HERE
+  // Example: create an array of "person" objects with random positions
+  population = [];
+
+  let gridDist = 5;
+  if (size > 380) {
+    gridDist = 2;
+  }
+  const perRow = 100 / gridDist;
+  for (let i = 0; i < size; i++) {
+    // repeat size times...
+    let x = (i % perRow) * gridDist + gridDist / 2;
+    let y = Math.floor(i / perRow) * gridDist + gridDist / 2;
+    // add to the population
+    let goodPerson = Math.random() < quarantineRate;
+    if (i < 1) {
+      goodPerson = false; // first person will never be a good person, they are the patient zero
+    }
+    population.push({
+      x,
+      y,
+      goodPerson,
+      infected: i < 1 /* only the first person is infected */,
+    });
+  }
+}
+
+/* --- DRAWING CODE BELOW --- */
 
 /* --- COORDINATE HELPER ------------------------------------------------
  *
@@ -67,9 +104,18 @@ function drawSimulation(ctx, bounds, elapsed) {
   );
 
   // Example: utility function to draw a person as a circle
-  function drawPerson(px, py, color) {
-    let { x, y } = percentToPixels(px, py, bounds);
-    ctx.fillStyle = color;
+  function drawPerson(person) {
+    let { x, y } = percentToPixels(person.x, person.y, bounds);
+    if (person.infected) {
+      // infected people are red, healthy people are green
+      if (person.goodPerson) {
+        ctx.fillStyle = "gray";
+      } else {
+        ctx.fillStyle = "red";
+      }
+    } else {
+      ctx.fillStyle = "green";
+    }
     ctx.beginPath();
     ctx.arc(x, y, 5, 0, Math.PI * 2);
     ctx.fill();
@@ -78,15 +124,11 @@ function drawSimulation(ctx, bounds, elapsed) {
   // Now we draw some people...
   // (in your real code you'll replace this with a loop)
   // like...
-  // for (let person of population) {...}
-
-  drawPerson(50, 50, "green");
-  drawPerson(35, 80, "red");
+  for (let person of population) {
+    drawPerson(person);
+  }
 
   // YOUR CODE HERE
-  if (currentPopulation<startingPopulation);{
-  drawPerson(math.random(min:0,max:100),math.random(min:0,max:100), "green");
-}
 }
 
 /* --- DRAWING: GRAPH ---------------------------------------------------
@@ -168,16 +210,6 @@ gi.addDrawing(function ({ ctx, width, height }) {
   drawHUD(ctx, width, height);
 });
 
-/* --- SIMULATION LOGIC -------------------------------------------------
- *
- * Write functions to update your population each round.
- * Your CREATE task function must have a parameter that affects
- * its behavior, sequencing, selection (if/else), iteration (loop),
- * and an explicit call with arguments somewhere in your code.
- */
-
-// YOUR CODE HERE
-
 /* --- CONTROLS --------------------------------------------------------- */
 
 let topBar = gi.addTopBar();
@@ -205,9 +237,7 @@ topBar.addSlider({
   min: 16,
   max: 2048,
   oninput: function (value) {
-    window.alert(
-      "Replace me: call your generatePopulation function with size " + value,
-    );
+    generatePopulation(value);
   },
 });
 
