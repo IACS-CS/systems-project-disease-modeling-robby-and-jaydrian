@@ -1,7 +1,7 @@
 /* Main game file: main.js */
 /* Game: [Your Game Name Here] */
 /* Authors: Robby and Jaydrien */
-/* Description: [Short description of your game here] */
+/* Description: [Quarantine Simulation] */
 /* Citations: [List any resources, libraries, tutorials, etc you used here] */
 /* AI Use: describe what you asked, what it gave you, and what you changed. */
 /* Mark AI-generated sections: // AI-generated: ... // end AI-generated   */
@@ -26,8 +26,17 @@ let population = [];
  * Your CREATE task function must have a parameter that affects
  * its behavior, sequencing, selection (if/else), iteration (loop),
  * and an explicit call with arguments somewhere in your code.
+ * 
+ * --- NOTEWORTHY -------------------------------------------------
+ *  goodPerson is a boolean that determines whether an infected person will quarantine, and therefore, not get anyone else sick.
+ * bad people will not quarantine, so they risk infecting others.
+ * --- COLOR LEGEND -------------------------------------------------
+ *   - Green: Healthy person
+ *   - Red: Infected person
+ *   - Gray: Infected person who is quarantining
  */
-//repeate untill higher then inital population
+
+//repeat until higher then inital population
 function generatePopulation(size) {
   // YOUR CODE HERE
   // Example: create an array of "person" objects with random positions
@@ -55,7 +64,10 @@ function generatePopulation(size) {
     });
   }
 }
-
+// Code to update the population each round goes here. goodPerson chance and infection chance update every round
+function nextRound() {
+  // YOUR CODE HERE
+}
 /* --- DRAWING CODE BELOW --- */
 
 /* --- COORDINATE HELPER ------------------------------------------------
@@ -244,7 +256,7 @@ topBar.addSlider({
 topBar.addButton({
   text: "Reset",
   onclick: function () {
-    window.alert("Replace me: call your generatePopulation function");
+    generatePopulation(population.length);
   },
 });
 
