@@ -987,7 +987,6 @@ let gi = new T();
 let infectionRate = 0.5;
 let quarantineRate = 0.65;
 let population = [];
-// let roundCount = 0;
 // let infectedPerRound = [1];
 
 /* --- SIMULATION LOGIC -------------------------------------------------
@@ -996,7 +995,7 @@ let population = [];
  * Your CREATE task function must have a parameter that affects
  * its behavior, sequencing, selection (if/else), iteration (loop),
  * and an explicit call with arguments somewhere in your code.
- * 
+ *
  * --- NOTEWORTHY -------------------------------------------------
  *  goodPerson is a boolean that determines whether an infected person will quarantine, and therefore, not get anyone else sick.
  * bad people will not quarantine, so they risk infecting others.
@@ -1030,8 +1029,35 @@ function generatePopulation(size) {
       x,
       y,
       goodPerson,
+      exposed: false,
       infected: i < 1 /* only the first person is infected */,
     });
+  }
+}
+// Code to update the population each round goes here. goodPerson chance and infection chance update every round
+function nextRound() {
+  // YOUR CODE HERE
+  for (let person of population) {
+    if (person.infected && !person.goodPerson) {
+      // this person is infected and not quarantining, so they can infect others
+      for (let other of population) {
+        if (!other.infected) {
+          // this other person is healthy, so they can get infected
+          let distance = Math.hypot(person.x - other.x, person.y - other.y);
+          if (distance < 10) {
+            // this other person is close enough to get infected
+            if (Math.random() < infectionRate) {
+              other.exposed = true; // mark them as exposed
+            }
+          }
+        }
+      }
+    }
+  } for (let person of population) {
+    if (person.exposed) {
+      person.infected = true; // they become infected
+      person.exposed = false; // reset exposed status
+    }
   }
 }
 /* --- DRAWING CODE BELOW --- */
@@ -1195,7 +1221,7 @@ let topBar = gi.addTopBar();
 topBar.addButton({
   text: "Next Round",
   onclick: function () {
-    window.alert("Replace me: call your simulation update function");
+    nextRound();
   },
 });
 
@@ -1207,6 +1233,18 @@ topBar.addSlider({
   value: infectionRate,
   oninput: function (value) {
     infectionRate = value;
+  },
+});
+
+topBar.addSlider({
+  label: "Quarantine Rate",
+  min: 0,
+  max: 1,
+  step: 0.01,
+  value: quarantineRate,
+  oninput: function (value) {
+    quarantineRate = value;
+    generatePopulation(population.length); // regenerate population to update goodPerson values
   },
 });
 
@@ -1229,4 +1267,4 @@ topBar.addButton({
 // TODO: add sliders or inputs for your own parameters here
 
 gi.run();
-//# sourceMappingURL=index-65447b66.js.map
+//# sourceMappingURL=index-4d938dd1.js.map
