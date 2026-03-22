@@ -3,7 +3,7 @@
 /* Authors: Robby and Jaydrien */
 /* Description: [Quarantine Simulation] */
 /* Citations: [List any resources, libraries, tutorials, etc you used here] */
-/* AI Use: describe what you asked, what it gave you, and what you changed. */
+/* AI used in creating the graph and probability events.*/
 /* Mark AI-generated sections: // AI-generated: ... // end AI-generated   */
 
 import "./style.css";
