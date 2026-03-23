@@ -18,7 +18,8 @@ let quarantineRate = 0.65;
 let quarantine = 0;
 let population = [];
 let roundCount = 0;
-// let infectedPerRound = [1];
+let infectedPerRound = [];
+let quarantinedPerRound = [];
 
 /* --- SIMULATION LOGIC -------------------------------------------------
  *
@@ -41,6 +42,9 @@ function generatePopulation(size) {
   // YOUR CODE HERE
   // Example: create an array of "person" objects with random positions
   population = [];
+  infectedPerRound = [];
+  quarantinedPerRound = [];
+  roundCount = 0;
 
   let gridDist = 5;
   if (size > 380) {
@@ -84,7 +88,8 @@ function nextRound() {
         }
       }
     }
-  } for (let person of population) {
+  }
+  for (let person of population) {
     if (person.exposed) {
       person.infected = true; // they become infected
       person.exposed = false; // reset exposed status
@@ -169,18 +174,16 @@ function drawSimulation(ctx, bounds, elapsed) {
 /* --- DRAWING: GRAPH ---------------------------------------------------
  *
  * Draw a bar chart in the graph area.
- * data[] is a list of values (e.g. infectedPerRound).
+ * infectedData[] and quarantinedData[] are lists of values by round.
  * dataMax is the largest possible value (e.g. population.length).
  *
  * This is a good CREATE task candidate -- try calling it with
  * fake data to see how changing the arguments changes the output.
- *
- * @param {number[]} data
  * @param {number} dataMax
  * @param {CanvasRenderingContext2D} ctx
  * @param {{top:number, bottom:number, left:number, right:number}} bounds
  */
-function drawGraph(data, dataMax, ctx, bounds) {
+function drawGraph(infectedData, quarantinedData, dataMax, ctx, bounds) {
   // Axes
   let topLeft = percentToPixels(0, 0, bounds);
   let bottomLeft = percentToPixels(0, 100, bounds);
@@ -193,8 +196,29 @@ function drawGraph(data, dataMax, ctx, bounds) {
   ctx.lineTo(bottomRight.x, bottomRight.y);
   ctx.stroke();
 
-  // YOUR CODE HERE
-  // Hint: let pct = (data[i] / dataMax) * 100;
+
+  if (infectedData.length === 0) return;
+  let numRounds = infectedData.length;
+  let barWidth = (bounds.right - bounds.left) / (numRounds * 2);
+  let height = bounds.bottom - bounds.top;
+  for (let i = 0; i < numRounds; i++) {
+    let infectedPct = (infectedData[i] / dataMax) * 100;
+    let quarantinedPct = (quarantinedData[i] / dataMax) * 100;
+    let x1 = bounds.left + i * 2 * barWidth;
+    let x2 = x1 + barWidth;
+    let infectedHeight = (infectedPct / 100) * height;
+    ctx.fillStyle = "red";
+    ctx.fillRect(x1, bounds.bottom - infectedHeight, barWidth, infectedHeight);
+    let quarantinedHeight = (quarantinedPct / 100) * height;
+    ctx.fillStyle = "gray";
+    ctx.fillRect(
+      x2,
+      bounds.bottom - quarantinedHeight,
+      barWidth,
+      quarantinedHeight,
+    );
+  }
+
 }
 
 /* --- DRAWING: HUD -----------------------------------------------------
@@ -238,7 +262,13 @@ gi.addDrawing(function ({ ctx, width, height }) {
     left: 50,
     right: width - 50,
   };
-  drawGraph([], 1, ctx, graphBounds); // <- replace [] and 1 with your real data
+  drawGraph(
+    infectedPerRound,
+    quarantinedPerRound,
+    population.length,
+    ctx,
+    graphBounds,
+  );
 });
 
 gi.addDrawing(function ({ ctx, width, height }) {
@@ -253,7 +283,19 @@ topBar.addButton({
   text: "Next Round",
   onclick: function () {
     nextRound();
-    roundCount + 1;
+    roundCount += 1;
+    let infectedCount = 0;
+    let quarantinedCount = 0;
+    for (let person of population) {
+      if (person.infected) {
+        infectedCount++;
+        if (person.goodPerson) {
+          quarantinedCount++;
+        }
+      }
+    }
+    infectedPerRound.push(infectedCount);
+    quarantinedPerRound.push(quarantinedCount);
   },
 });
 
